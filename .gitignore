@@ -14,10 +14,8 @@ build/
 *.pot
 *.pyc
 db.sqlite3
-media/*
-!media/avatars/
-!media/avatars/default.png
-static/
+media/
+staticfiles/
 .env
 
 # Virtual Environment

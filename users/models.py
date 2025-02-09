@@ -1,4 +1,5 @@
 from django.db import models
+from django.conf import settings
 from django.contrib.auth.models import User
 from PIL import Image, ImageDraw, ImageFont
 from io import BytesIO
@@ -14,13 +15,22 @@ class Profile(models.Model):
     location = models.CharField(max_length=100)
     birth_date = models.DateField(null=True, blank=True)
     avatar = models.ImageField(
-        upload_to="avatars/", default="avatars/default.png")
+        upload_to="avatars/",  blank=True,null=True)
     date_joined = models.DateTimeField(auto_now_add=True)
     updated_on = models.DateTimeField(auto_now=True)
 
     def __str__(self):
         return self.user.username
 
+
+    @property
+    def avatar_url(self):
+        """
+        Returns the avatar URL if uploaded, otherwise returns the static default avatar.
+        """
+        if self.avatar:
+            return self.avatar.url
+        return settings.STATIC_URL + "avatars/default.png"
     
     def auto_generate_generic_avatar(self):
         """
