@@ -49,8 +49,8 @@ def product_update_view(request, slug):
     return render(request, "product_form.html", {"form": form})
 
 
-def product_delete_view(request, slug):
-    product = get_object_or_404(Product, slug=slug)
+def product_delete_view(request, id):
+    product = get_object_or_404(Product, id=id)
     if request.method == "POST":
         product.delete()
         return redirect("product_list")

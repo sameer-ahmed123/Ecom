@@ -9,6 +9,9 @@
 <p>Sale Price: {{ product.sale_price }}</p>
 <p>Date Added: {{ product.date_added }}</p>
 <p>Date Updated: {{ product.date_updated }}</p>
+<p>product added by {{product.user}}</p>
+{% if request.user == product.user %}
 <a href="{% url 'product_update' product.slug %}">Edit</a>
-<a href="{% url 'product_delete' product.slug %}">Delete</a>
+<a href="{% url 'product_delete' product.id %}">Delete</a>
+{% endif %}
 {% endblock %}
