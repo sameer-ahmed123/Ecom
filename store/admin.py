@@ -8,16 +8,16 @@ class ProductAdmin(admin.ModelAdmin):
     def url(self, obj):
         return obj.get_absolute_url()  # Properly calling the method
 
-    list_display = ['name', 'price', 'sale_price', 'url', 'date_added', 'date_updated']
+    list_display = ['name', 'base_price', 'sale_price', 'url','total_stock', 'date_added', 'date_updated']
     list_filter = ['date_added', 'date_updated']
     search_fields = ['name', 'description']
 
 
 
 class ProductVariantAdmin(admin.ModelAdmin):
-    list_display = ['product', 'size', 'color', 'stock_quantity']
-    list_filter = ['product','color', 'size']
-    search_fields = ['size', 'product__name']
+    list_display = ['product', 'size', 'color', 'stock_quantity','price']
+    list_filter = ['product','color', 'size','price']
+    search_fields = ['size', 'product__name','color']
 
 
 class ProductReviewAdmin(admin.ModelAdmin):

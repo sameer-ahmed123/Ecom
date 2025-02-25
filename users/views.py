@@ -10,13 +10,11 @@ from users.forms import ProfileForm
 
 def View_profile(request):
     profile = Profile.objects.get(user=request.user)
-    print(profile)
     return render(request, "profile.html", {"profile": profile})
 
 
 def edit_profile(request):
     profile = get_object_or_404(Profile, user=request.user)
-    print(profile.location)
     if request.method == "POST":
         form = ProfileForm(
             instance=profile, data=request.POST, files=request.FILES)

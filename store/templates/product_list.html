@@ -1,13 +1,30 @@
 {% extends "base.html" %}
 
 {% block content %}
-  <h1>Product List</h1>
-  <ul>
-    {% for product in products %}
-      <li>
-        <a href="{% url 'product_detail' product.slug %}">{{ product.name }}</a>
-      </li>
-    {% endfor %}
-  </ul>
-  <a href="{% url 'product_create' %}">Add new product</a>
+<h1>Product List</h1>
+<ul>
+  {% for product in products %}
+  <div class="product-card">
+    <a href="{% url 'product_detail' product.slug%}">
+      <h3>{{ product.name }}</h3>
+    </a>
+    <p class="price">
+      Price:
+      {% if product.has_variants %}
+      From {{ product.base_price }} to {{product.max_variant_price}}
+      {% else %}
+      {{ product.base_price }}
+      {% endif %}
+    </p>
+    <p class="stock">
+      {% if product.is_in_stock %}
+      <span class="in-stock">In Stock</span>
+      {% else %}
+      <span class="out-of-stock">Out of Stock</span>
+      {% endif %}
+    </p>
+  </div>
+  {% endfor %}
+</ul>
+<a href="{% url 'product_create' %}">Add new product</a>
 {% endblock %}

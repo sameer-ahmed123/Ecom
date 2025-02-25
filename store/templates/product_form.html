@@ -1,11 +1,207 @@
+<form method="post" enctype="multipart/form-data">
+  {% csrf_token %}
 
-{% extends "base.html" %}
+  <!-- Product Common Fields -->
+  <h3>Product Details</h3>
+  <div id="product-common-fields">
+    <p>
+      {{ form.product_type.label_tag }} {{ form.product_type }}
+    </p>
+    <p>
+      {{ form.name.label_tag }} {{ form.name }}
+    </p>
+    <p>
+      {{ form.description.label_tag }} {{ form.description }}
+    </p>
+    <p>
+      {{ form.detailed_description.label_tag }} {{ form.detailed_description }}
+    </p>
+    <p>
+      {{ form.features.label_tag }} {{ form.features }}
+    </p>
+    <p>
+      {{ form.base_price.label_tag }} {{ form.base_price }}
+    </p>
+    <p>
+      {{ form.sale_price.label_tag }} {{ form.sale_price }}
+    </p>
+    <p>
+      {{ form.category.label_tag }} {{ form.category }}
+    </p>
+    <p>
+      {{ form.tags.label_tag }} {{ form.tags }}
+    </p>
+  </div>
 
-{% block content %}
-  <h1>{% if object %}Edit{% else %}Create{% endif %} Product</h1>
-  <form method="post">
-    {% csrf_token %}
-    {{ form.as_p }}
-    <button type="submit">Save</button>
-  </form>
-{% endblock %}
+  <!-- Physical Product Fields -->
+  <div id="physical-product-fields" style="display:none;">
+    <p>
+      {{ form.brand.label_tag }} {{ form.brand }}
+    </p>
+    <p>
+      {{ form.main_image.label_tag }} {{ form.main_image }}
+    </p>
+    <p>
+      {{ form.stock_quantity.label_tag }} {{ form.stock_quantity }}
+    </p>
+  </div>
+
+  <!-- Digital Product Fields -->
+  <div id="digital-product-fields" style="display:none;">
+    <p>
+      {{ form.main_image.label_tag }} {{ form.main_image }}
+    </p>
+    <p>
+      {{ form.digital_file.label_tag }} {{ form.digital_file }}
+    </p>
+    <p>
+      {{ form.stock_quantity.label_tag }} {{ form.stock_quantity }}
+    </p>
+  </div>
+
+  <!-- Variants Section -->
+  <h3>Product Variants</h3>
+  {{ formset.management_form }}
+  <div id="variants-container">
+    {% for form in formset %}
+      <div class="variant-form">
+        <p>
+          {{ form.variant_type.label_tag }} {{ form.variant_type }}
+        </p>
+
+        <!-- Common field: Price (always visible) -->
+        <p>
+          {{ form.price.label_tag }} {{ form.price }}
+        </p>
+
+        <!-- Physical Variant Fields -->
+        <div class="physical-fields">
+          <p>
+            {{ form.size.label_tag }} {{ form.size }}
+          </p>
+          <p>
+            {{ form.color.label_tag }} {{ form.color }}
+          </p>
+          <p>
+            {{ form.weight.label_tag }} {{ form.weight }}
+          </p>
+          <p>
+            {{ form.dimensions.label_tag }} {{ form.dimensions }}
+          </p>
+          <p>
+            {{ form.stock_quantity.label_tag }} {{ form.stock_quantity }}
+          </p>
+        </div>
+
+        <!-- Digital Variant Fields -->
+        <div class="digital-fields">
+          <p>
+            {{ form.file.label_tag }} {{ form.file }}
+          </p>
+        </div>
+
+        <!-- Variant Description (common) -->
+        <p>
+          {{ form.variant_description.label_tag }} {{ form.variant_description }}
+        </p>
+
+        {% if form.DELETE %}
+          <p>{{ form.DELETE }}</p>
+        {% endif %}
+      </div>
+    {% endfor %}
+  </div>
+
+  <button type="button" id="add-variant" class="btn btn-secondary">Add Another Variant</button>
+  <button type="submit" class="btn btn-primary">Save Product</button>
+</form>
+
+<!-- JavaScript to Toggle Product-Level Fields -->
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+  const productTypeSelect = document.getElementById('id_product_type');
+  const physicalFields = document.getElementById('physical-product-fields');
+  const digitalFields = document.getElementById('digital-product-fields');
+
+  function toggleProductFields() {
+    if (productTypeSelect.value === 'digital') {
+      digitalFields.style.display = 'block';
+      physicalFields.style.display = 'none';
+    } else {
+      physicalFields.style.display = 'block';
+      digitalFields.style.display = 'none';
+    }
+  }
+
+  if (productTypeSelect) {
+    productTypeSelect.addEventListener('change', toggleProductFields);
+    toggleProductFields();
+  }
+});
+</script>
+
+<!-- JavaScript to Toggle Variant-Level Fields and Add New Variant Forms -->
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  function attachVariantTypeLogic(variantForm) {
+    const variantTypeSelect = variantForm.querySelector('select[name$="-variant_type"]');
+    const physicalFields = variantForm.querySelector('.physical-fields');
+    const digitalFields = variantForm.querySelector('.digital-fields');
+    const stockInput = variantForm.querySelector('input[name$="-stock_quantity"]');
+
+    function toggleVariantFields() {
+      if (variantTypeSelect.value === "physical") {
+        if (physicalFields) physicalFields.style.display = "block";
+        if (digitalFields) digitalFields.style.display = "none";
+        if (stockInput) {
+          stockInput.parentElement.style.display = "block";
+        }
+      } else if (variantTypeSelect.value === "digital") {
+        if (physicalFields) physicalFields.style.display = "none";
+        if (digitalFields) digitalFields.style.display = "block";
+        if (stockInput) {
+          stockInput.value = 1; // Force digital variants to be "in stock"
+          stockInput.parentElement.style.display = "none";
+        }
+      }
+    }
+
+    if (variantTypeSelect) {
+      variantTypeSelect.addEventListener('change', toggleVariantFields);
+      toggleVariantFields();
+    }
+  }
+
+  // Attach logic for all existing variant forms.
+  document.querySelectorAll('.variant-form').forEach(function (form) {
+    attachVariantTypeLogic(form);
+  });
+
+  // Logic to add new variant forms dynamically.
+  const addButton = document.getElementById('add-variant');
+  const container = document.getElementById('variants-container');
+  const totalFormsInput = document.querySelector('#id_variants-TOTAL_FORMS');
+
+  addButton.addEventListener('click', function () {
+    const formCount = parseInt(totalFormsInput.value);
+    const newForm = container.querySelector('.variant-form').cloneNode(true);
+
+    // Update all input names/IDs in the new form.
+    const regex = new RegExp(`-(\\d+)-`, 'g');
+    newForm.innerHTML = newForm.innerHTML.replace(regex, `-${formCount}-`);
+    newForm.innerHTML = newForm.innerHTML.replace(/__prefix__/g, formCount);
+
+    // (Optional) Clear the input values in the cloned form.
+    newForm.querySelectorAll('input, select, textarea').forEach(function(input) {
+      if (input.type !== 'hidden' && input.name.indexOf('DELETE') === -1) {
+        input.value = '';
+      }
+    });
+
+    container.appendChild(newForm);
+    totalFormsInput.value = formCount + 1;
+
+    attachVariantTypeLogic(newForm);
+  });
+});
+</script>

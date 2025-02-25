@@ -1,16 +1,82 @@
 {% extends "base.html" %}
 
 {% block content %}
+<style>
+    .stock-info {
+        margin: 20px 0;
+        padding: 15px;
+        border: 1px solid #ddd;
+        border-radius: 5px;
+    }
+
+    .variants-stock ul {
+        list-style: none;
+        padding-left: 0;
+    }
+
+    .in-stock {
+        color: #28a745;
+        font-weight: bold;
+    }
+
+    .out-of-stock {
+        color: #dc3545;
+        font-weight: bold;
+    }
+
+    .total-stock {
+        margin-top: 15px;
+        padding-top: 10px;
+        border-top: 1px solid #eee;
+    }
+</style>
+
+
 <h1>{{ product.name }}</h1>
-<img src="{{ product.image.url }}" alt="{{ product.name }}">
+{% if product.main_image %}
+<img src="{{ product.main_image.url }}" alt="{{ product.name }}">
+{% endif %}
 <p>catergoy: {{product.category}}</p>
 <p>Description: {{ product.description }}</p>
-<p>Price: {{ product.price }}</p>
+<p>Price: {{ product.base_price }}</p>
 <p>Sale Price: {{ product.sale_price }}</p>
-<p>Date Added: {{ product.date_added }}</p>
-<p>Date Updated: {{ product.date_updated }}</p>
-<p>product added by {{product.user}}</p>
+
+
+
+
 {% if request.user == product.user %}
+
+<div class="stock-info">
+    <h3>Stock Information</h3>
+    {% if product.has_variants %}
+    <div class="variants-stock">
+        <h4>Variant Stock:</h4>
+        <ul>
+            {% for variant in product.variants.all %}
+            <li style="display: flex;gap:15px;">
+                <p>size : {{ variant.size }} </p>
+                <p>Color : {{ variant.color }}</p>
+                <p>available : <span class="{% if variant.is_in_stock %}in-stock{% else %}out-of-stock{% endif %}">
+                        {{ variant.stock_quantity }}
+                    </span></p>
+            </li>
+            {% endfor %}
+        </ul>
+        <div class="total-stock">
+            <strong>Total Stock Across All Variants: {{ product.total_stock }}</strong>
+        </div>
+    </div>
+    {% else %}
+    <div class="base-stock">
+        <strong>Available Stock: {{ product.stock_quantity }}</strong>
+    </div>
+    {% endif %}
+    <b><small>Date Updated: {{ product.date_updated }}</small></b>
+    <b><small>Date Added: {{ product.date_added }}</small></b>
+    <b><small>product added by {{product.user}}</small></b>
+
+</div>
+
 <a href="{% url 'product_update' product.slug %}">Edit</a>
 <a href="{% url 'product_delete' product.id %}">Delete</a>
 {% endif %}
