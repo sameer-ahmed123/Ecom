@@ -64,10 +64,12 @@ class Tag(models.Model):
 # ProductVariant Model
 # -------------------------------
 
+
 VARIANT_TYPE_CHOICES = (
     ('physical', 'Physical'),
     ('digital', 'Digital'),
 )
+
 
 class ProductVariant(models.Model):
     """Product variants that can be either physical or digital."""
@@ -79,11 +81,13 @@ class ProductVariant(models.Model):
         choices=VARIANT_TYPE_CHOICES,
         default='physical'
     )
-    variant_description = models.TextField(max_length=500, blank=True, null=True)
+    variant_description = models.TextField(
+        max_length=500, blank=True, null=True)
     # Fields for physical products
     size = models.CharField(max_length=50, blank=True, null=True)
     color = models.CharField(max_length=50, blank=True, null=True)
-    weight = models.DecimalField(max_digits=6, decimal_places=2, blank=True, null=True)
+    weight = models.DecimalField(
+        max_digits=6, decimal_places=2, blank=True, null=True)
     dimensions = models.CharField(max_length=100, blank=True, null=True)
     # Field for digital products
     file = models.FileField(
@@ -91,6 +95,11 @@ class ProductVariant(models.Model):
         blank=True,
         null=True,
         help_text="Only required if variant is Digital"
+    )
+    variant_image = models.ImageField(
+        upload_to="product_images/variant_images/",
+        blank=True,
+        null=True
     )
     # Common fields
     stock_quantity = models.PositiveIntegerField(default=0)
@@ -127,13 +136,15 @@ class ProductVariant(models.Model):
 # Product Model
 # -------------------------------
 
+
 class Product(models.Model):
     """Enhanced Product Model for a modern e-commerce website."""
     PRODUCT_TYPES = (
         ('physical', 'Physical Product'),
         ('digital', 'Digital Product'),
     )
-    product_type = models.CharField(max_length=10, choices=PRODUCT_TYPES, default='physical')
+    product_type = models.CharField(
+        max_length=10, choices=PRODUCT_TYPES, default='physical')
     user = models.ForeignKey(
         User, on_delete=models.CASCADE, related_name="products"
     )
@@ -145,7 +156,8 @@ class Product(models.Model):
     name = models.CharField(max_length=255)
     slug = models.SlugField(unique=True, blank=True)
     brand = models.CharField(max_length=100, blank=True, null=True)
-    description = models.TextField(help_text="Short description of the product")
+    description = models.TextField(
+        help_text="Short description of the product")
     detailed_description = models.TextField(
         blank=True,
         null=True,
@@ -193,14 +205,16 @@ class Product(models.Model):
     @property
     def total_stock(self):
         if self.variants.exists():
-            total_of_variants = sum(variant.stock_quantity for variant in self.variants.all())
+            total_of_variants = sum(
+                variant.stock_quantity for variant in self.variants.all())
             return self.stock_quantity + total_of_variants
         return self.stock_quantity
 
     @property
     def is_in_stock(self):
-        if self.has_variants:
-            return self.variants.filter(stock_quantity__gt=0).exists()
+        self.has_variants
+        if self.product_type == "digital":
+            return True
         return self.stock_quantity > 0
 
     @property
@@ -233,6 +247,7 @@ class Product(models.Model):
 # -------------------------------
 # ProductReview Model
 # -------------------------------
+
 
 class ProductReview(models.Model):
     """Allows users to review products."""

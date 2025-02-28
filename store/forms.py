@@ -3,11 +3,13 @@ from django import forms
 from django.forms import inlineformset_factory
 from .models import Product, ProductVariant, Tag, ProductReview, Category
 
+
 class ProductVariantForm(forms.ModelForm):
     class Meta:
         model = ProductVariant
         # Always include the file field in the base fields.
-        fields = ['price', 'variant_type', 'variant_description', 'stock_quantity', 'file']
+        fields = ['price', 'variant_type', 'variant_description',
+                  'stock_quantity', 'file', 'variant_image']
 
     def __init__(self, *args, **kwargs):
         # Pop product_type if provided; default to 'physical' if not.
@@ -19,6 +21,8 @@ class ProductVariantForm(forms.ModelForm):
         # Ensure the file field is always present.
         if 'file' not in self.fields:
             self.fields['file'] = forms.FileField(required=False)
+        if 'variant_image' not in self.fields:
+            self.fields['variant_image'] = forms.ImageField(required=False)
 
         if product_type == 'physical':
             # For physical variants, add physical-specific fields with widget classes.
@@ -33,7 +37,8 @@ class ProductVariantForm(forms.ModelForm):
                 ),
                 'weight': forms.DecimalField(
                     required=False,
-                    widget=forms.NumberInput(attrs={"class": "physical-fields"})
+                    widget=forms.NumberInput(
+                        attrs={"class": "physical-fields"})
                 ),
                 'dimensions': forms.CharField(
                     required=False,
@@ -42,16 +47,23 @@ class ProductVariantForm(forms.ModelForm):
                 # Ensure stock_quantity is required for physical variants.
                 'stock_quantity': forms.IntegerField(
                     required=True,
-                    widget=forms.NumberInput(attrs={"class": "physical-fields"})
+                    widget=forms.NumberInput(
+                        attrs={"class": "physical-fields"})
                 ),
             })
-            self.fields['file'].required = False  # Not required for physical variants.
+            # Not required for physical variants.
+            self.fields['file'].required = False
         else:
             # For digital variants, require the file and add a CSS class for later toggling.
             self.fields['file'].required = True
-            self.fields['file'].widget = forms.ClearableFileInput(attrs={"class": "digital-fields"})
+            # self.fields['variant_image'].required = True
+            self.fields['file'].widget = forms.ClearableFileInput(
+                attrs={"class": "digital-fields"})
+            # self.fields['variant_image'] = forms.ClearableFileInput(
+            #     attrs={"class": "digital-fields"})
             # Hide stock_quantity for digital variants.
             self.fields['stock_quantity'].widget = forms.HiddenInput()
+
 
 class ProductVariantInlineFormSet(BaseInlineFormSet):
     def _construct_form(self, i, **kwargs):
@@ -59,6 +71,7 @@ class ProductVariantInlineFormSet(BaseInlineFormSet):
         # default to 'physical' if not set.
         kwargs['product_type'] = getattr(self, 'product_type', 'physical')
         return super()._construct_form(i, **kwargs)
+
 
 # Use our custom formset in the inlineformset_factory.
 ProductVariantFormset = inlineformset_factory(
@@ -70,6 +83,7 @@ ProductVariantFormset = inlineformset_factory(
     can_delete=True
 )
 
+
 class CategoryForm(forms.ModelForm):
     class Meta:
         model = Category
@@ -78,6 +92,7 @@ class CategoryForm(forms.ModelForm):
             'tags': forms.SelectMultiple(attrs={"class": "select2"}),
             'category': forms.Select(attrs={"class": "form-control"})
         }
+
 
 class ProductForm(forms.ModelForm):
     class Meta:
@@ -96,10 +111,12 @@ class ProductForm(forms.ModelForm):
             # Additional widgets can be added here as needed.
         }
 
+
 class TagForm(forms.ModelForm):
     class Meta:
         model = Tag
         fields = "__all__"
+
 
 class ProductReviewForm(forms.ModelForm):
     class Meta:
